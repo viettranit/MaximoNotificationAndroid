@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Maximo Assignment</string>
+    <string name="pref_topic_label">Registered Topic</string>
+    <string name="pref_topic_key">topic</string>
+    <string name="pref_topic_default">MAXADMIN</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+</resources>
