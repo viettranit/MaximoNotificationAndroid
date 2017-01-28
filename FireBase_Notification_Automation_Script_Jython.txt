@@ -1,0 +1,71 @@
+from psdi.util.logging import MXLoggerFactory
+from java.io import BufferedReader
+from java.io import DataOutputStream
+from java.io import InputStreamReader
+from java.io import OutputStreamWriter
+from java.lang import StringBuilder
+from java.net import URL
+from java.net import HttpURLConnection
+from javax.net.ssl import HttpsURLConnection
+from com.ibm.json.java import JSONObject
+
+# CONSTANTS
+SERVER_KEY = 'key=AAAAqMwm48o:APA91bGb-TzQJUloeCO671ZW_cGER4coo565jZSQr6XvVZiBiGKzXiiYphSf9aDsoDuUOjpOAU7A083_roUeJIbX3tGklVbuPE-IwsAN7yDa5YaH73SjzF1faUEHibq6XShiNxHiETa7'
+FIREBASE_URL = 'https://fcm.googleapis.com/fcm/send'
+
+APP_NAME = mbo.getString('APP')
+RECORD_ID = str(mbo.getInt('OWNERID'))
+MAX_HOST_NAME = 'http://192.168.2.146:9080/maximo/'
+
+# NOTIFICATION Input
+NOTIFICATION_TOPIC = '/topics/' + mbo.getString('AssignCode').upper()
+NOTIFICATION_TITLE = 'New Maximo Assignment'
+NOTIFICATION_BODY = mbo.getString('Description')
+NOTIFICATION_LINK = MAX_HOST_NAME + 'ui/login?event=loadapp&value=' + APP_NAME + '&uniqueid=' + RECORD_ID
+
+joPayload= JSONObject()
+joNotification = JSONObject()
+joData = JSONObject()
+
+joPayload.put("to", NOTIFICATION_TOPIC)
+
+joNotification.put("title", NOTIFICATION_TITLE)
+joNotification.put("body", NOTIFICATION_BODY)
+joPayload.put("notification", joNotification)
+
+joData.put("link", NOTIFICATION_LINK)
+joPayload.put("data", joData)
+
+url = URL( FIREBASE_URL)
+con = url.openConnection()
+
+con.setDoOutput(True)
+con.setDoInput(True)
+con.setRequestMethod('POST')
+
+con.setRequestProperty('Content-Type', 'application/json')
+con.setRequestProperty('Authorization', SERVER_KEY)
+
+wr = OutputStreamWriter(con.getOutputStream())
+wr.write(joPayload.toString())
+wr.flush()
+
+sb = StringBuilder()
+
+intHttpResult = con.getResponseCode() 
+
+if intHttpResult == HttpURLConnection.HTTP_OK:
+    inputStream = con.getInputStream()
+    br = BufferedReader(InputStreamReader(inputStream, "utf-8"))
+
+    line = br.readLine()
+    while line is not None:   
+        sb.append(line + "\n")
+        line = br.readLine()
+
+    br.close()
+
+#    mbo.getMboSet("SR").getMbo(0).setValue("errmsg", joPayload.toString())
+
+#else:
+#    mbo.getMboSet("SR").getMbo(0).setValue("errmsg", con.getResponseMessage())
